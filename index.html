@@ -39,7 +39,7 @@ a{color:var(--navy)}
  </section>
  <section class="card"><button class="big" id="live">BUKSAN ANG CAMERA</button>
   <div class="row2"><input id="code" placeholder="Barcode scanner: i-click dito" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" name="rcqscan-nofill"><button id="go">Ilagay</button></div>
-  <div class="note" style="margin-top:6px">Phone: buksan ang camera, itutok sa bawat sticker, tuloy-tuloy na ito. Barcode scanner: i-click ang kahon, tapos scan lang nang scan.</div>
+  <div class="note" style="margin-top:6px">Phone: buksan ang camera, isang QR lang sa loob ng kahon, tuloy-tuloy na ito. Barcode scanner: i-click ang kahon, tapos scan lang nang scan.</div>
  </section>
  <div id="jo" style="display:none">
   <div class="tally"><div class="t"><b id="nA">-</b><span>DAPAT</span></div><div class="t"><b id="nP">-</b><span>HANDA/QC</span></div><div class="t"><b id="nL">-</b><span>NAISAKAY</span></div><div class="t"><b id="nS">-</b><span>DUMATING</span></div></div>
@@ -49,7 +49,7 @@ a{color:var(--navy)}
 </div>
 <div id="sc"><video id="vid" playsinline muted autoplay></video><div id="fr"></div>
  <div class="sctop"><span id="scStage"></span><span id="scCount">0 OK</span></div>
- <div class="scbot"><div id="scMsg">Itutok sa QR ng sticker.</div><button id="scStop">TAPOS NA</button></div></div>
+ <div class="scbot"><div id="scMsg">Isang QR lang sa loob ng kahon.</div><button id="scStop">TAPOS NA</button></div></div>
 <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
 <script>
 var API='https://script.google.com/macros/s/AKfycbwIO-9yJpQy5h2N7-cYqsLVxtbev-k_zEyo2lTXcbq7P6YflrtsU4-w8GBzAOu-BkLD/exec',NAMES={PROD:'Production',LOAD:'Truck',SITE:'Site'};
@@ -84,14 +84,14 @@ function liveStart(){var nm=needName();if(!nm)return;
  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){say('bad','Hindi bumubukas ang camera sa browser na ito. Gamitin ang Safari sa iPhone o Chrome sa Android.');return}
  navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}}}).then(function(st){
   live.stream=st;live.on=true;live.done={};live.seen={};live.n=0;$('scCount').textContent='0 OK';var v=$('vid');v.srcObject=st;v.play().catch(function(){});
-  $('scStage').textContent=NAMES[stage]+' · '+nm;scShow('','Itutok sa QR ng sticker.');$('sc').className='on';
+  $('scStage').textContent=NAMES[stage]+' · '+nm;scShow('','Isang QR lang sa loob ng kahon.');$('sc').className='on';
   if('BarcodeDetector' in window){try{live.bd=new BarcodeDetector({formats:['qr_code']})}catch(e){live.bd=null}}
   if(!live.bd&&!window.jsQR)scShow('bad','Hindi pa handa ang QR reader. Isara at i-refresh ang page.');
   liveTick();
  }).catch(function(e){say('bad','Ayaw bumukas ng camera ('+(e&&e.name||'error')+'). Piliin ang Allow kapag nagtanong ang phone.')})}
 function liveFrame(v){var W=v.videoWidth,H=v.videoHeight;if(!W||!H)return Promise.resolve(null);
- var cf=(live.flip++%2)?1:0.6,sw=W*cf,sh=H*cf,max=cf===1?1100:1200,sc=Math.min(max/Math.max(sw,sh),1.5),c=live.cv;c.width=Math.round(sw*sc);c.height=Math.round(sh*sc);
- var g=c.getContext('2d',{willReadFrequently:true});g.drawImage(v,(W-sw)/2,(H-sh)/2,sw,sh,0,0,c.width,c.height);
+ var sz=Math.round(Math.min(W,H)*0.74),sx=Math.round((W-sz)/2),sy=Math.round(Math.max(0,Math.min(H-sz,H*0.44-sz/2))),sc=Math.min(1000/sz,1.5),c=live.cv;c.width=c.height=Math.round(sz*sc);
+ var g=c.getContext('2d',{willReadFrequently:true});g.drawImage(v,sx,sy,sz,sz,0,0,c.width,c.height);
  if(live.bd)return live.bd.detect(c).then(function(r){return r&&r.length?r[0].rawValue:null}).catch(function(){return null});
  if(!window.jsQR)return Promise.resolve(null);var d=g.getImageData(0,0,c.width,c.height),q=jsQR(d.data,c.width,c.height,{inversionAttempts:'dontInvert'});return Promise.resolve(q&&q.data?q.data:null)}
 function liveTick(){if(!live.on)return;var go=function(){live.timer=setTimeout(liveTick,120)},v=$('vid');if(live.busy||v.readyState<2)return go();live.busy=true;
