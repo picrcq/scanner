@@ -39,7 +39,7 @@ a{color:var(--navy)}
  </section>
  <section class="card"><button class="big" id="live">BUKSAN ANG CAMERA</button>
   <div class="row2"><input id="code" placeholder="Barcode scanner: i-click dito" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" name="rcqscan-nofill"><button id="go">Ilagay</button></div>
-  <div class="note" style="margin-top:6px">Phone: buksan ang camera, isang QR lang sa loob ng kahon, tuloy-tuloy na ito. Barcode scanner: i-click ang kahon, tapos scan lang nang scan.</div>
+  <div class="note" style="margin-top:6px">Phone: buksan ang camera, isang QR lang sa loob ng kahon, tuloy-tuloy na ito. Barcode scanner: i-click ang kahon, i-scan ang barcode ng DR para mabuksan ang JO, tapos ang mga sticker.</div>
  </section>
  <div id="jo" style="display:none">
   <div class="tally"><div class="t"><b id="nA">-</b><span>DAPAT</span></div><div class="t"><b id="nP">-</b><span>HANDA/QC</span></div><div class="t"><b id="nL">-</b><span>NAISAKAY</span></div><div class="t"><b id="nS">-</b><span>DUMATING</span></div></div>
@@ -70,7 +70,9 @@ function render(j){cur=j;jo=j.jo;$('jo').style.display='block';$('cl').textConte
 function loadJo(j){clearTimeout(joTimer);joTimer=setTimeout(function(){if(j)api({a:'jo',jo:j}).then(function(r){if(r&&r.items)render(r)}).catch(function(){})},700)}
 function codeOf(raw){var c=String(raw||'').trim();if(c.indexOf('c=')>=0){try{c=decodeURIComponent(c.split('c=').pop().split('&')[0])}catch(e){}}if(c.indexOf('#')>=0)c=c.split('#').pop();return c.trim()}
 function send(code,cb,fail){api({a:'record',code:code,stage:stage,name:$('nm').value.trim(),pin:$('pin').value.trim()}).then(function(r){cb(r);if(r.jo)loadJo(r.jo)}).catch(fail)}
-function manual(){var t=$('code').value.trim();$('code').value='';if(!t||!needName())return;var parts=t.split(/[\s,;]+/).filter(Boolean);
+function joOf(t){var m=/[?&]jo=([A-Za-z0-9._-]+)/i.exec(t)||/^J[O0][- ]?([A-Za-z0-9._-]+)$/i.exec(t);return m?m[1]:''}
+function openJo(j){say('warn','Binubuksan ang JO '+j+'...');api({a:'jo',jo:j}).then(function(r){if(r&&r.items&&r.items.length){render(r);say('ok','Bukas na ang JO '+r.jo+'. I-scan na ang mga piraso.')}else say('bad','Hindi kilala ang JO '+j+'.');$('code').focus()}).catch(function(e){say('bad','Hindi mabuksan ang JO - subukan ulit (signal?).',String(e))})}
+function manual(){var t=$('code').value.trim();$('code').value='';if(!t)return;if(joOf(t)){openJo(joOf(t));return}if(!needName())return;var parts=t.split(/[\s,;]+/).filter(Boolean);
  if(parts.length>1){say('warn','Itinatala ang listahan...');api({a:'many',codes:t,stage:stage,name:$('nm').value.trim(),pin:$('pin').value.trim()}).then(function(r){say(r.status,r.msg,r.detail||'');if(r.pin){$('pin').style.display='block';$('pin').focus()}if(r.jo)loadJo(r.jo)}).catch(function(e){say('bad','Hindi na-save - subukan ulit (signal?).',String(e))});return}
  var c=codeOf(t);say('warn','Itinatala...',c);send(c,function(r){say(r.status,r.msg,r.code||c);if(r.pin){$('pin').style.display='block';$('pin').focus()}else if(!/Mobi|Android|iPhone/i.test(navigator.userAgent))$('code').focus()},function(e){say('bad','Hindi na-save - subukan ulit (signal?).',String(e))})}
 $('go').onclick=manual;$('code').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();manual()}});
@@ -90,7 +92,7 @@ function liveStart(){var nm=needName();if(!nm)return;
   liveTick();
  }).catch(function(e){say('bad','Ayaw bumukas ng camera ('+(e&&e.name||'error')+'). Piliin ang Allow kapag nagtanong ang phone.')})}
 function liveFrame(v){var W=v.videoWidth,H=v.videoHeight;if(!W||!H)return Promise.resolve(null);
- var sz=Math.round(Math.min(W,H)*0.74),sx=Math.round((W-sz)/2),sy=Math.round(Math.max(0,Math.min(H-sz,H*0.44-sz/2))),sc=Math.min(1000/sz,1.5),c=live.cv;c.width=c.height=Math.round(sz*sc);
+ var sz=Math.round(Math.min(W,H)*0.74),sx=Math.round((W-sz)/2),sy=Math.round(Math.max(0,Math.min(H-sz,H*0.44-sz/2))),sc=Math.min(1000/sz,1),c=live.cv;c.width=c.height=Math.round(sz*sc);
  var g=c.getContext('2d',{willReadFrequently:true});g.drawImage(v,sx,sy,sz,sz,0,0,c.width,c.height);
  if(live.bd)return live.bd.detect(c).then(function(r){return r&&r.length?r[0].rawValue:null}).catch(function(){return null});
  if(!window.jsQR)return Promise.resolve(null);var d=g.getImageData(0,0,c.width,c.height),q=jsQR(d.data,c.width,c.height,{inversionAttempts:'dontInvert'});return Promise.resolve(q&&q.data?q.data:null)}
