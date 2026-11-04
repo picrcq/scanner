@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="tl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>RCQ Scanner</title>
+<style>
+:root{--bg:#f3f4f2;--card:#fff;--ink:#1b2430;--mut:#5d6773;--line:#d9ddd8;--navy:#1f3a5f;--acc:#e8701a;--ok:#2e7d4f;--okbg:#e3f1e8;--warn:#9c5a00;--warnbg:#fdf0dc;--bad:#b3261e;--badbg:#fbe4e2}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 Arial,Helvetica,sans-serif}
+header{background:var(--navy);color:#fff;padding:12px 16px}header b{font-size:12px;letter-spacing:.12em;color:#ffb27a}header h1{margin:2px 0 0;font-size:20px}header div{font-size:13px;opacity:.85}
+.wrap{max-width:760px;margin:0 auto;padding:12px 16px 40px;display:grid;gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.lbl{font-size:12px;letter-spacing:.08em;color:var(--mut);text-transform:uppercase;font-weight:bold}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+.seg button{font:bold 15px Arial;padding:12px 4px;border-radius:8px;border:1.5px solid var(--line);background:#fff;color:var(--ink)}.seg button.on{background:var(--navy);border-color:var(--navy);color:#fff}
+input{font:16px Arial;padding:11px 10px;border-radius:8px;border:1.5px solid var(--line);width:100%}
+.big{font:bold 17px Arial;padding:15px;border-radius:10px;border:0;background:var(--acc);color:#fff;width:100%}
+.row2{display:flex;gap:8px;margin-top:10px}.row2 input{flex:1;min-width:0}.row2 button{border:1.5px solid var(--navy);background:#fff;color:var(--navy);border-radius:8px;padding:0 14px;font-weight:bold}
+#fb{display:none;padding:16px;border-radius:10px;font-weight:bold;font-size:17px}#fb small{display:block;font:12px monospace;margin-top:4px}
+#fb.ok{display:block;background:var(--okbg);color:var(--ok)}#fb.warn{display:block;background:var(--warnbg);color:var(--warn)}#fb.bad{display:block;background:var(--badbg);color:var(--bad)}
+.tally{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.t{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px;text-align:center}.t b{display:block;font-size:24px}.t span{font-size:11px;color:var(--mut)}
+.it{padding:9px 10px;border-top:1px solid var(--line)}.it:first-child{border-top:0}.it b{color:var(--navy)}.list{background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:12px}.note{font-size:12px;color:var(--mut)}
+a{color:var(--navy)}
+#sc{position:fixed;inset:0;z-index:50;background:#000;color:#fff;display:none}#sc.on{display:block}
+#vid{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
+#fr{position:absolute;left:50%;top:44%;width:72vmin;height:72vmin;transform:translate(-50%,-50%);border:4px solid #fff;border-radius:14px;box-shadow:0 0 0 100vmax rgba(0,0,0,.28);transition:border-color .12s}
+#fr.wait{border-color:#ffb27a}#fr.ok{border-color:#35c26f}#fr.warn{border-color:#ffc24a}#fr.bad{border-color:#ff5a4f}
+.sctop{position:absolute;top:0;left:0;right:0;display:flex;justify-content:space-between;gap:8px;padding:calc(12px + env(safe-area-inset-top)) 14px 12px;background:rgba(0,0,0,.6);font-weight:bold}
+.scbot{position:absolute;bottom:0;left:0;right:0;padding:12px 14px calc(14px + env(safe-area-inset-bottom));background:rgba(0,0,0,.72);display:grid;gap:10px}
+#scMsg{border-radius:10px;padding:12px;font-size:17px;font-weight:bold;min-height:72px;background:#26303c;color:#fff}#scMsg small{display:block;font:12px monospace;margin-top:4px;opacity:.85}
+#scMsg.ok{background:var(--okbg);color:var(--ok)}#scMsg.warn{background:var(--warnbg);color:var(--warn)}#scMsg.bad{background:var(--badbg);color:var(--bad)}
+#scStop{font:bold 17px Arial;padding:14px;border-radius:10px;border:0;background:#fff;color:var(--navy)}
+</style></head>
+<body>
+<header><b>RCQ SCANNER</b><h1 id="cl">I-scan ang sticker</h1><div id="sub">Camera ng phone o barcode scanner</div></header>
+<div class="wrap">
+ <div id="fb"></div>
+ <section class="card"><div class="lbl">Ikaw at ang stage (tatandaan ng phone)</div>
+  <input id="nm" placeholder="Pangalan mo" autocomplete="name" style="margin-top:8px">
+  <div class="seg"><button data-s="PROD">1 · Production</button><button data-s="LOAD">2 · Truck</button><button data-s="SITE">3 · Site</button></div>
+  <input id="pin" placeholder="PIN (kung hinihingi)" inputmode="numeric" style="margin-top:8px;display:none">
+ </section>
+ <section class="card"><button class="big" id="live">BUKSAN ANG CAMERA</button>
+  <div class="row2"><input id="code" placeholder="Barcode scanner: i-click dito" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" name="rcqscan-nofill"><button id="go">Ilagay</button></div>
+  <div class="note" style="margin-top:6px">Phone: buksan ang camera, itutok sa bawat sticker, tuloy-tuloy na ito. Barcode scanner: i-click ang kahon, tapos scan lang nang scan.</div>
+ </section>
+ <div id="jo" style="display:none">
+  <div class="tally"><div class="t"><b id="nA">-</b><span>DAPAT</span></div><div class="t"><b id="nP">-</b><span>HANDA/QC</span></div><div class="t"><b id="nL">-</b><span>NAISAKAY</span></div><div class="t"><b id="nS">-</b><span>DUMATING</span></div></div>
+  <div class="list" id="list"></div>
+  <p class="note"><a id="dr" target="_blank" rel="noopener">Buksan ang buong DR</a> (para sa TINANGGAP NA sa site)</p>
+ </div>
+</div>
+<div id="sc"><video id="vid" playsinline muted autoplay></video><div id="fr"></div>
+ <div class="sctop"><span id="scStage"></span><span id="scCount">0 OK</span></div>
+ <div class="scbot"><div id="scMsg">Itutok sa QR ng sticker.</div><button id="scStop">TAPOS NA</button></div></div>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script>
+var API='https://script.google.com/macros/s/AKfycbwIO-9yJpQy5h2N7-cYqsLVxtbev-k_zEyo2lTXcbq7P6YflrtsU4-w8GBzAOu-BkLD/exec',NAMES={PROD:'Production',LOAD:'Truck',SITE:'Site'};
+var $=function(i){return document.getElementById(i)},cur=null,jo=new URLSearchParams(location.search).get('jo')||'',joTimer=0;
+function ls(k,v){try{if(v===undefined)return localStorage.getItem(k)||'';localStorage.setItem(k,v)}catch(e){return ''}}
+var stage=ls('rcq_stage')||'PROD';$('nm').value=ls('rcq_name');$('pin').value=ls('rcq_pin');
+function setStage(s){stage=s;ls('rcq_stage',s);document.querySelectorAll('.seg button').forEach(function(b){b.className=b.dataset.s===s?'on':''})}
+document.querySelectorAll('.seg button').forEach(function(b){b.onclick=function(){setStage(b.dataset.s)}});setStage(stage);
+$('nm').onchange=function(){ls('rcq_name',$('nm').value.trim())};$('pin').onchange=function(){ls('rcq_pin',$('pin').value.trim())};
+function api(o){return fetch(API,{method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(o),redirect:'follow'}).then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json()})}
+function say(c,m,d){var f=$('fb');f.className=c;f.textContent=m;if(d){var s=document.createElement('small');s.textContent=d;f.appendChild(s)}window.scrollTo(0,0)}
+function needName(){var n=$('nm').value.trim();if(!n){say('bad','Ilagay muna ang pangalan mo sa itaas.');$('nm').focus();return ''}ls('rcq_name',n);return n}
+function render(j){cur=j;jo=j.jo;$('jo').style.display='block';$('cl').textContent=j.client||('JO '+j.jo);$('sub').textContent='JO '+j.jo+(j.address?' · '+j.address:'');
+ var it=j.items,c=function(k){return it.filter(function(x){return x[k]}).length};$('nA').textContent=it.length;$('nP').textContent=c('prod');$('nL').textContent=c('load');$('nS').textContent=c('site');
+ $('dr').href=API+'?jo='+encodeURIComponent(j.jo);var L=$('list');L.innerHTML='';
+ it.forEach(function(x){var r=document.createElement('div');r.className='it';var b=document.createElement('b');b.textContent=x.m+' ';r.appendChild(b);r.appendChild(document.createTextNode(x.d+(x.parts?' · Piraso: '+x.parts[0]+' / '+x.parts[1]:'')));
+  var n=document.createElement('div');n.className='note';n.textContent=[x.prod?'Prod ✓':'Wala pa Prod',x.load?'Truck ✓':'Wala pa Truck',x.site?'Site ✓':'Wala pa Site'].join(' · ');r.appendChild(n);L.appendChild(r)})}
+function loadJo(j){clearTimeout(joTimer);joTimer=setTimeout(function(){if(j)api({a:'jo',jo:j}).then(function(r){if(r&&r.items)render(r)}).catch(function(){})},700)}
+function codeOf(raw){var c=String(raw||'').trim();if(c.indexOf('c=')>=0){try{c=decodeURIComponent(c.split('c=').pop().split('&')[0])}catch(e){}}if(c.indexOf('#')>=0)c=c.split('#').pop();return c.trim()}
+function send(code,cb,fail){api({a:'record',code:code,stage:stage,name:$('nm').value.trim(),pin:$('pin').value.trim()}).then(function(r){cb(r);if(r.jo)loadJo(r.jo)}).catch(fail)}
+function manual(){var t=$('code').value.trim();$('code').value='';if(!t||!needName())return;var parts=t.split(/[\s,;]+/).filter(Boolean);
+ if(parts.length>1){say('warn','Itinatala ang listahan...');api({a:'many',codes:t,stage:stage,name:$('nm').value.trim(),pin:$('pin').value.trim()}).then(function(r){say(r.status,r.msg,r.detail||'');if(r.pin){$('pin').style.display='block';$('pin').focus()}if(r.jo)loadJo(r.jo)}).catch(function(e){say('bad','Hindi na-save - subukan ulit (signal?).',String(e))});return}
+ var c=codeOf(t);say('warn','Itinatala...',c);send(c,function(r){say(r.status,r.msg,r.code||c);if(r.pin){$('pin').style.display='block';$('pin').focus()}else if(!/Mobi|Android|iPhone/i.test(navigator.userAgent))$('code').focus()},function(e){say('bad','Hindi na-save - subukan ulit (signal?).',String(e))})}
+$('go').onclick=manual;$('code').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();manual()}});
+$('code').addEventListener('paste',function(e){var t=(e.clipboardData||window.clipboardData).getData('text')||'';if(t.split(/[\s,;]+/).filter(Boolean).length>1){e.preventDefault();$('code').value=t;manual()}});
+var live={on:false,stream:null,done:{},seen:{},n:0,busy:false,bd:null,ac:null,flip:0,timer:0,cv:document.createElement('canvas')};
+function beep(ok){try{var a=live.ac;if(a){var o=a.createOscillator(),g=a.createGain();o.connect(g);g.connect(a.destination);o.frequency.value=ok?1300:280;g.gain.value=.25;o.start();o.stop(a.currentTime+(ok?.12:.4))}}catch(e){}try{navigator.vibrate&&navigator.vibrate(ok?80:[200,80,200])}catch(e){}}
+function scShow(c,m,d){var b=$('scMsg');b.className=c;b.textContent=m;if(d){var s=document.createElement('small');s.textContent=d;b.appendChild(s)}$('fr').className=c}
+function liveStop(){live.on=false;clearTimeout(live.timer);if(live.stream)live.stream.getTracks().forEach(function(t){t.stop()});live.stream=null;$('vid').srcObject=null;$('sc').className='';if(jo)loadJo(jo)}
+function liveStart(){var nm=needName();if(!nm)return;
+ try{live.ac=live.ac||new (window.AudioContext||window.webkitAudioContext)();live.ac.resume()}catch(e){}
+ if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){say('bad','Hindi bumubukas ang camera sa browser na ito. Gamitin ang Safari sa iPhone o Chrome sa Android.');return}
+ navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:'environment'},width:{ideal:1920},height:{ideal:1080}}}).then(function(st){
+  live.stream=st;live.on=true;live.done={};live.seen={};live.n=0;$('scCount').textContent='0 OK';var v=$('vid');v.srcObject=st;v.play().catch(function(){});
+  $('scStage').textContent=NAMES[stage]+' · '+nm;scShow('','Itutok sa QR ng sticker.');$('sc').className='on';
+  if('BarcodeDetector' in window){try{live.bd=new BarcodeDetector({formats:['qr_code']})}catch(e){live.bd=null}}
+  if(!live.bd&&!window.jsQR)scShow('bad','Hindi pa handa ang QR reader. Isara at i-refresh ang page.');
+  liveTick();
+ }).catch(function(e){say('bad','Ayaw bumukas ng camera ('+(e&&e.name||'error')+'). Piliin ang Allow kapag nagtanong ang phone.')})}
+function liveFrame(v){var W=v.videoWidth,H=v.videoHeight;if(!W||!H)return Promise.resolve(null);
+ var cf=(live.flip++%2)?1:0.6,sw=W*cf,sh=H*cf,max=cf===1?1100:1200,sc=Math.min(max/Math.max(sw,sh),1.5),c=live.cv;c.width=Math.round(sw*sc);c.height=Math.round(sh*sc);
+ var g=c.getContext('2d',{willReadFrequently:true});g.drawImage(v,(W-sw)/2,(H-sh)/2,sw,sh,0,0,c.width,c.height);
+ if(live.bd)return live.bd.detect(c).then(function(r){return r&&r.length?r[0].rawValue:null}).catch(function(){return null});
+ if(!window.jsQR)return Promise.resolve(null);var d=g.getImageData(0,0,c.width,c.height),q=jsQR(d.data,c.width,c.height,{inversionAttempts:'dontInvert'});return Promise.resolve(q&&q.data?q.data:null)}
+function liveTick(){if(!live.on)return;var go=function(){live.timer=setTimeout(liveTick,120)},v=$('vid');if(live.busy||v.readyState<2)return go();live.busy=true;
+ liveFrame(v).then(function(raw){live.busy=false;if(raw)liveHit(raw);go()},function(){live.busy=false;go()})}
+function liveHit(raw){if(/[?&]jo=/.test(raw)&&!/[?&]c=/.test(raw)){var j=raw.split('jo=').pop().split('&')[0];if(j)loadJo(decodeURIComponent(j));scShow('warn','QR ng buong DR ito. I-scan ang sticker ng piraso.');return}
+ var code=codeOf(raw),now=Date.now();if(!code||live.done[code])return;if(live.seen[code]&&now-live.seen[code]<8000)return;live.seen[code]=now;scShow('wait','Itinatala...',code);
+ send(code,function(r){if(!live.on)return;if(r.pin){liveStop();say('bad',r.msg);$('pin').style.display='block';$('pin').focus();return}
+  if(r.status==='ok'){live.n++;live.done[code]=1;$('scCount').textContent=live.n+' OK'}else if(/^DOBLE/.test(r.msg||''))live.done[code]=1;scShow(r.status,r.msg,r.code||code);beep(r.status==='ok')},
+  function(){delete live.seen[code];if(live.on){scShow('bad','Hindi na-save - itutok ulit (signal?).',code);beep(false)}})}
+$('live').onclick=liveStart;$('scStop').onclick=liveStop;
+document.addEventListener('visibilitychange',function(){if(document.hidden&&live.on)liveStop()});
+if(jo)loadJo(jo);if(!/Mobi|Android|iPhone/i.test(navigator.userAgent))setTimeout(function(){$('code').focus()},300);
+</script></body></html>
