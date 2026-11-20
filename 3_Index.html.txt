@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html><head><base target="_top"><meta charset="utf-8">
+<style>
+:root{--bg:#f3f4f2;--card:#fff;--ink:#1b2430;--mut:#5d6773;--line:#d9ddd8;--navy:#1f3a5f;--acc:#e8701a;--ok:#2e7d4f;--okbg:#e3f1e8;--warn:#9c5a00;--warnbg:#fdf0dc;--bad:#b3261e;--badbg:#fbe4e2}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 Arial,Helvetica,sans-serif}
+header{background:var(--navy);color:#fff;padding:12px 16px}header b{font-size:12px;letter-spacing:.12em;color:#ffb27a}header h1{margin:2px 0 0;font-size:20px}header .sub{font-size:13px;opacity:.85}
+.wrap{max-width:760px;margin:0 auto;padding:12px 16px 40px;display:grid;gap:12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px}
+.lbl{font-size:12px;letter-spacing:.08em;color:var(--mut);text-transform:uppercase;font-weight:bold}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+.seg button{font:bold 15px Arial;padding:12px 4px;border-radius:8px;border:1.5px solid var(--line);background:#fff;color:var(--ink)}
+.seg button.on{background:var(--navy);border-color:var(--navy);color:#fff}
+input{font:15px Arial;padding:11px 10px;border-radius:8px;border:1.5px solid var(--line);width:100%}
+.big{font:bold 17px Arial;padding:15px;border-radius:10px;border:0;background:var(--acc);color:#fff;width:100%}
+.row2{display:flex;gap:8px;margin-top:8px}.row2 input{flex:1}.row2 button{border:1.5px solid var(--navy);background:#fff;color:var(--navy);border-radius:8px;padding:0 14px;font-weight:bold}
+#fb{display:none;padding:16px;border-radius:10px;font-weight:bold;font-size:17px}
+#fb.ok{display:block;background:var(--okbg);color:var(--ok)}#fb.warn{display:block;background:var(--warnbg);color:var(--warn)}#fb.bad{display:block;background:var(--badbg);color:var(--bad)}
+#fb small{display:block;font-weight:normal;font-size:12px;margin-top:4px;font-family:monospace}
+.tally{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.t{background:#fff;border:1px solid var(--line);border-radius:10px;padding:8px;text-align:center}
+.t b{display:block;font-size:26px}.t span{font-size:11px;color:var(--mut)}
+.it{display:grid;grid-template-columns:64px 1fr auto;gap:8px;align-items:center;padding:9px 10px;border-top:1px solid var(--line)}
+.it:first-child{border-top:0}.m{font-weight:bold;font-size:18px;color:var(--navy)}.m small{display:block;font-size:10px;color:var(--mut);font-weight:normal}
+.p{font-size:11px;padding:2px 7px;border-radius:99px;display:inline-block;margin:1px 0;white-space:nowrap}.y{background:var(--okbg);color:var(--ok)}.n{background:var(--bg);color:var(--mut)}
+.st{text-align:right}.list{background:#fff;border:1px solid var(--line);border-radius:10px;overflow:hidden}.note{font-size:12px;color:var(--mut)}
+a.big{display:block;text-align:center;text-decoration:none;box-sizing:border-box}
+.alt{font:14px Arial;background:none;border:0;color:var(--navy);text-decoration:underline;width:100%;padding:10px 4px 2px}
+</style></head>
+<body>
+<header><b>RCQ DELIVERY RECEIPT</b><h1 id="cl">RCQ e-DR</h1><div class="sub" id="sub">Scan the QR sticker with the camera</div></header>
+<div class="wrap">
+  <div id="fb"></div>
+  <section class="card" id="who">
+    <div class="lbl">You and the stage (one time only, the phone will remember)</div>
+    <input id="nm" placeholder="Your name" autocomplete="name" style="margin-top:8px">
+    <div class="seg"><button data-s="PROD">1 · Production</button><button data-s="LOAD">2 · Truck</button><button data-s="SITE">3 · Site</button></div>
+    <input id="pin" placeholder="PIN (if asked)" inputmode="numeric" style="margin-top:8px;display:none">
+  </section>
+  <section class="card">
+    <a class="big" id="live" href="https://picrcq.github.io/scanner/" target="_blank" rel="noopener">OPEN THE SCANNER</a>
+  <button class="alt" id="snap">Take a photo instead</button>
+    <input id="file" type="file" accept="image/*" capture="environment" hidden>
+    <div class="row2"><input id="code" placeholder="Click here before scanning (barcode scanner)" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" name="rcqscan-nofill"><button id="go">Enter</button></div>
+    <div class="note" style="margin-top:6px">Phone: tap OPEN THE SCANNER and keep scanning there. Barcode scanner: click the box above, scan the barcode on the DR to open the JO, then scan the stickers. Many at once: paste the list of codes from the scanner app here (one code per line).</div>
+  </section>
+  <div id="jo" style="display:none">
+    <div class="tally"><div class="t"><b id="nA">-</b><span>EXPECTED</span></div><div class="t"><b id="nP">-</b><span>READY/QC</span></div><div class="t"><b id="nL">-</b><span>LOADED</span></div><div class="t"><b id="nS">-</b><span>ARRIVED</span></div></div>
+    <div class="card" id="verdict" style="margin-top:12px;font-weight:bold"></div>
+    <div class="list" id="list" style="margin-top:12px"></div>
+    <section class="card" id="recv" style="margin-top:12px;display:none">
+      <div class="lbl">Receiving at site</div><div class="note" id="rs">Not yet received.</div>
+      <input id="rn" placeholder="Name of the receiver (client / caretaker)" style="margin-top:8px">
+      <button class="big" id="rb" style="background:var(--navy);margin-top:8px">RECEIVED</button>
+    </section>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script>
+var CODE=<?!= JSON.stringify(code) ?>, JO=<?!= JSON.stringify(jo) ?>, NAMES={PROD:'Production',LOAD:'Truck',SITE:'Site'};
+var $=function(i){return document.getElementById(i)}, cur=null;
+function ls(k,v){try{if(v===undefined)return localStorage.getItem(k)||'';localStorage.setItem(k,v)}catch(e){return ''}}
+var stage=ls('rcq_stage')||'PROD';
+$('nm').value=ls('rcq_name'); $('pin').value=ls('rcq_pin');
+function setStage(s){stage=s;ls('rcq_stage',s);document.querySelectorAll('.seg button').forEach(function(b){b.className=b.dataset.s===s?'on':''});if(cur)render(cur)}
+document.querySelectorAll('.seg button').forEach(function(b){b.onclick=function(){setStage(b.dataset.s)}});setStage(stage);
+$('nm').onchange=function(){ls('rcq_name',$('nm').value.trim())};$('pin').onchange=function(){ls('rcq_pin',$('pin').value.trim())};
+function fmt(iso){if(!iso)return'';var d=new Date(iso);return d.toLocaleString('en-PH',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}
+function say(c,m,d){var f=$('fb');f.className=c;f.textContent=m;if(d){var s=document.createElement('small');s.textContent=d;f.appendChild(s)}window.scrollTo(0,0);try{navigator.vibrate&&navigator.vibrate(c==='ok'?80:[200,80,200])}catch(e){}}
+function setScan(j){if(j)$('live').href='https://picrcq.github.io/scanner/?jo='+encodeURIComponent(j)}
+function render(j){
+  cur=j;setScan(j.jo);$('jo').style.display='block';$('cl').textContent=j.client||('JO '+j.jo);$('sub').textContent='JO '+j.jo+(j.address?' · '+j.address:'');
+  var it=j.items,P=it.filter(function(x){return x.prod}).length,L=it.filter(function(x){return x.load}).length,S=it.filter(function(x){return x.site}).length;
+  $('nA').textContent=it.length;$('nP').textContent=P;$('nL').textContent=L;$('nS').textContent=S;
+  var v=$('verdict'),miss=stage==='SITE'?it.length-S:stage==='LOAD'?it.length-L:it.length-P;
+  v.style.background=miss?'var(--warnbg)':'var(--okbg)';v.style.color=miss?'var(--warn)':'var(--ok)';
+  v.textContent=stage==='LOAD'?(miss?miss+' MISSING on the truck.':'Truck is COMPLETE. Ready to leave.'):stage==='SITE'?(miss?'Only '+S+' of '+it.length+' have arrived.':'ALL ARRIVED at site.'):(miss?miss+' item(s) not yet finished in production.':'Production is finished for all items.');
+  var Lx=$('list');Lx.innerHTML='';
+  it.forEach(function(x){var r=document.createElement('div');r.className='it';
+    var a=document.createElement('div');a.className='m';a.textContent=x.m;var sm=document.createElement('small');sm.textContent=x.k;a.appendChild(sm);
+    var b=document.createElement('div');b.textContent=x.d+(x.s?' · '+x.s:'');if(x.parts){var q=document.createElement('div');q.className='note';q.textContent='Parts: '+x.parts[0]+' / '+x.parts[1];b.appendChild(q)}
+    var c=document.createElement('div');c.className='st';[['prod','Prod'],['load','Truck'],['site','Site']].forEach(function(p){var s=document.createElement('span');s.className='p '+(x[p[0]]?'y':'n');s.textContent=x[p[0]]?p[1]+' '+fmt(x[p[0]].at):'No '+p[1]+' yet';c.appendChild(s);c.appendChild(document.createElement('br'))});
+    r.appendChild(a);r.appendChild(b);r.appendChild(c);Lx.appendChild(r)});
+  $('recv').style.display=stage==='SITE'?'block':'none';
+  if(j.received){$('rs').textContent='RECEIVED by '+j.received.name+' on '+fmt(j.received.at)+'.';$('rs').style.color='var(--ok)'}
+}
+function refresh(jo){if(!jo)return;google.script.run.withSuccessHandler(function(j){if(j)render(j)}).getJo(jo)}
+function done(r,detail){say(r.status,r.msg,detail);if(!/Mobi|Android|iPhone/i.test(navigator.userAgent))$('code').focus();if(r.pin){$('pin').style.display='block';$('pin').focus()}refresh(r.jo||(cur&&cur.jo))}
+function recMany(text){var nm=$('nm').value.trim();if(!nm){say('bad','Enter your name at the top first.');$('nm').focus();return}
+  ls('rcq_name',nm);say('warn','Recording the list...');
+  google.script.run.withSuccessHandler(function(r){done(r,r.detail||'')}).withFailureHandler(function(e){say('bad','Not saved - try again (signal?).',String(e))}).recordMany(text,stage,nm,$('pin').value.trim())}
+function rec(code){
+  var nm=$('nm').value.trim();if(!nm){say('bad','Enter your name at the top first, then scan again.');$('nm').focus();pending=code;return}
+  ls('rcq_name',nm);say('warn','Recording...',code);
+  google.script.run.withSuccessHandler(function(r){done(r,r.code||'')})
+    .withFailureHandler(function(e){say('bad','Not saved - try again (signal?).',String(e))}).record(code,stage,nm,$('pin').value.trim());
+}
+var pending=CODE||'';
+$('nm').addEventListener('change',function(){if(pending&&$('nm').value.trim()){var c=pending;pending='';rec(c)}});
+function joOf(t){var m=/[?&]jo=([A-Za-z0-9._-]+)/i.exec(t)||/^J[O0][- ]?([A-Za-z0-9._-]+)$/i.exec(t);return m?m[1]:''}
+function openJo(j){say('warn','Opening JO '+j+'...');google.script.run.withSuccessHandler(function(r){if(r&&r.items&&r.items.length){render(r);say('ok','JO '+r.jo+' is open. Scan the pieces now.')}else say('bad','JO '+j+' is not recognized.');$('code').focus()}).withFailureHandler(function(e){say('bad','Cannot open the JO - try again (signal?).',String(e))}).getJo(j)}
+$('go').onclick=function(){var c=$('code').value.trim();$('code').value='';if(!c)return;if(joOf(c)){openJo(joOf(c));return}if(c.split(/[\s,;]+/).filter(Boolean).length>1)recMany(c);else rec(c)};
+$('code').addEventListener('paste',function(e){var t=(e.clipboardData||window.clipboardData).getData('text')||'';if(t.split(/[\s,;]+/).filter(Boolean).length>1){e.preventDefault();$('code').value='';recMany(t)}});
+$('code').addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();$('go').click()}});
+$('rb').onclick=function(){if(!cur)return;google.script.run.withSuccessHandler(function(r){say(r.status,r.msg);if(r.jo)render(r.jo)}).receive(cur.jo,$('rn').value,$('nm').value.trim())};
+$('snap').onclick=function(){$('file').click()};
+$('file').onchange=function(e){var f=e.target.files&&e.target.files[0];e.target.value='';if(!f)return;say('warn','Reading the QR...');decode(f).then(function(c){if(!c){say('bad','Cannot read the QR. Hold the phone about a hand span away, in focus, with the whole QR showing - or use the Camera app.');return}rec(c)})};
+function decode(f){return new Promise(function(res){var im=new Image();im.onload=function(){var W=im.naturalWidth,H=im.naturalHeight;
+  function cut(cf,max){var sw=W*cf,sh=H*cf,sc=Math.min(max/Math.max(sw,sh),2),c=document.createElement('canvas');c.width=Math.round(sw*sc);c.height=Math.round(sh*sc);c.getContext('2d').drawImage(im,(W-sw)/2,(H-sh)/2,sw,sh,0,0,c.width,c.height);return c}
+  var tries=[[1,1600],[1,800],[0.6,1200],[0.4,900],[1,2400],[0.6,2000],[1,1200],[0.7,700],[0.5,600]];
+  (async function(){if('BarcodeDetector' in window){try{var bd=new BarcodeDetector({formats:['qr_code']});for(var i=0;i<4;i++){var r=await bd.detect(cut(tries[i][0],tries[i][1]));if(r&&r.length)return res(r[0].rawValue)}}catch(e){}}
+    if(window.jsQR)for(var k=0;k<tries.length;k++){var c=cut(tries[k][0],tries[k][1]),d=c.getContext('2d').getImageData(0,0,c.width,c.height),q=jsQR(d.data,c.width,c.height,{inversionAttempts:'attemptBoth'});if(q&&q.data)return res(q.data)}
+    res(null)})()};im.onerror=function(){res(null)};im.src=URL.createObjectURL(f)})}
+if(!/Mobi|Android|iPhone/i.test(navigator.userAgent))setTimeout(function(){$('code').focus()},300);
+setScan(JO);
+if(CODE)rec(CODE);else if(JO)google.script.run.withSuccessHandler(function(j){if(j)render(j)}).getJo(JO);
+</script></body></html>
